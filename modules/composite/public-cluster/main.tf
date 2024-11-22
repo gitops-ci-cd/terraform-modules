@@ -33,8 +33,7 @@ module "acm" {
   source           = "../../certificate"
 
   domain_name      = var.domain_name
-  validation_method = "DNS"
-  route53_zone_id   = module.hosted_zone.zone_id
+  zone_id   = module.hosted_zone.zone_id
 
   tags = locals.tags
 }
@@ -52,7 +51,7 @@ module "vpc" {
 module "load_balancer" {
   source  = "../../load-balancer"
 
-  name     = "${var.environment}-lb"
+  name     = "${var.name}-${var.environment}-lb"
   subnets  = module.vpc.public_subnet_ids
   type     = "application"
   internal = false
@@ -60,54 +59,11 @@ module "load_balancer" {
   tags = locals.tags
 }
 
-# Cluster IAM
-module "cluster_role" {
-  source = "../../iam/role"
-
-  name = "k8s-cluster-role"
-  assume_role_policy = {
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect    = "Allow"
-        Principal = { Service = "eks.amazonaws.com" }
-        Action    = "sts:AssumeRole"
-      }
-    ]
-  }
-
-  tags = locals.tags
-}
-module "cluster_policy" {
-  source = "../../iam/policy"
-
-  name        = "k8s-cluster-policy"
-  description = "Policy for EKS cluster to manage associated resources"
-  policy = {
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect   = "Allow"
-        Action   = ["ec2:Describe*", "ecr:GetAuthorizationToken", "autoscaling:Describe*"]
-        Resource = "*"
-      }
-    ]
-  }
-
-  tags = locals.tags
-}
-module "cluster_policy_attachment" {
-  source = "../../iam/attachment"
-
-  role_arn  = module.cluster_role.role_arn
-  policy_arn = module.cluster_policy.policy_arn
-}
-
 # Node IAM
 module "node_role" {
   source = "../../iam/role"
 
-  name = "k8s-node-role"
+  name = "${var.name}-k8s-node-role"
   assume_role_policy = {
     Version = "2012-10-17"
     Statement = [
@@ -124,7 +80,7 @@ module "node_role" {
 module "node_policy" {
   source = "../../iam/policy"
 
-  name        = "k8s-node-policy"
+  name        = "${var.name}-k8s-node-policy"
   description = "Policy for EKS worker nodes to access S3 and CloudWatch"
   policy = {
     Version = "2012-10-17"
@@ -150,10 +106,22 @@ module "node_policy_attachment" {
 module "kubernetes" {
   source = "../../kubernetes"
 
-  cluster_name       = "${var.environment}-cluster"
+  cluster_name       = "${var.name}-${var.environment}-cluster"
   region             = var.region
   vpc_id             = module.vpc.vpc_id
   subnet_ids         = module.vpc.private_subnet_ids
+
+  # Node group details
+  node_groups = [
+    {
+      name          = "${var.name}-${var.environment}-node-group"
+      desired_size  = 2
+      max_size      = 5
+      min_size      = 1
+      node_role_arn = module.node_role.role_arn
+      instance_type = "t3.medium"
+    }
+  ]
 
   tags = locals.tags
 }

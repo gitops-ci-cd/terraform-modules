@@ -27,11 +27,12 @@ variable "kubernetes_version" {
 variable "node_groups" {
   description = "List of configurations for EKS node groups."
   type = list(object({
-    name          = string
-    instance_type = string
-    desired_size  = number
-    min_size      = number
-    max_size      = number
+    name              = string
+    desired_size      = number
+    min_size          = number
+    max_size          = number
+    instance_type     = string
+    node_role_arn     = string
   }))
   default = []
 }

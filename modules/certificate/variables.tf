@@ -9,19 +9,12 @@ variable "subject_alternative_names" {
   default     = []
 }
 
-variable "validation_method" {
-  description = "Method for validating the certificate (DNS or EMAIL)."
+variable "zone_id" {
+  description = "The Route 53 hosted zone ID for DNS validation."
   type        = string
-  default     = "DNS"
 }
 
-variable "route53_zone_id" {
-  description = "The Route 53 hosted zone ID for DNS validation. Required if validation_method is DNS."
-  type        = string
-  default     = ""
-}
-
-variable "dns_validation_ttl" {
+variable "ttl" {
   description = "The TTL for DNS validation records."
   type        = number
   default     = 300

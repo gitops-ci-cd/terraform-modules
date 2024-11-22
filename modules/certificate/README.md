@@ -14,8 +14,7 @@ module "certificate" {
 
   domain_name = "example.com"
   subject_alternative_names = ["www.example.com"]
-  validation_method = "DNS"
-  route53_zone_id = "Z3P5QSUBK4POTI"
+  zone_id = "Z3P5QSUBK4POTI"
 
   tags = {
     Environment = "production"

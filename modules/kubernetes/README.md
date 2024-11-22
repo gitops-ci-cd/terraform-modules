@@ -21,12 +21,13 @@ module "eks_cluster" {
     environment = "production"
     team        = "platform"
   }
-  node_group = {
-    name           = "default-node-group"
-    instance_type  = "t3.medium"
-    desired_size   = 3
-    min_size       = 1
-    max_size       = 6
+  node_groups = {
+    name               = "default-node-group"
+    instance_type      = "t3.medium"
+    desired_size       = 3
+    min_size           = 1
+    max_size           = 6
+    node_role_arn      = "arn:aws:iam::123456789012:role/eks-node-role"
   }
 }
 ```
