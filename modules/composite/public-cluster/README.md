@@ -6,28 +6,39 @@ The following diagram illustrates the resources created by this module, and how 
 
 ```mermaid
 flowchart TB
-    user[User] --> dns[DNS Record]
+    user[User]
+    dns[DNS Record]
+    internet[Internet]
+
     subgraph Hosted Zone
        dns
     end
-    internet[Internet]
 
-    dns --> lb[Load Balancer]
+    user <--> dns
+    dns <--> igw
 
     subgraph VPC
         subgraph Public Subnet
+            igw[Internet Gateway]
             lb[Load Balancer]
-            lb <--> cert[Certificate]
+            cert[Certificate]
+            nat[NAT Gateway]
+            
+            igw --> lb
+            lb <--> cert
         end
 
         subgraph Private Subnet
             subgraph Kubernetes Cluster
-                iam[IAM]
-                lb --> k8s[Pods/Services]
+                iam[IAM Policies/Roles]
+                k8s[Pods/Services]
+
+                lb --> k8s
             end
-            k8s --> nat[NAT Gateway]
         end
+        k8s --> nat
     end
 
-    nat --> internet
+    nat --> igw
+    igw --> internet
 ```
