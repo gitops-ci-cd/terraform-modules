@@ -1,0 +1,41 @@
+# Terraform state files
+*.tfstate
+*.tfstate.*
+
+# Terraform lock file
+.terraform.lock.hcl
+
+# Terraform module directory
+.terraform/
+**/.terraform/*
+
+# Ignore override files as they are usually used for local development
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# Crash log files
+crash.log
+
+# Ignore any .env files, as they may contain sensitive environment variables
+.env
+.env.*
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE and editor directories and files
+.idea/
+*.swp
+*.swo
+*.bak
+*.orig
+
+# Brew files
+Brewfile.lock.json
