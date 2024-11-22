@@ -14,8 +14,8 @@ flowchart TB
        dns
     end
 
-    user --> dns
-    dns --> igw
+    user <--> dns
+    dns <--> igw
 
     subgraph VPC
         subgraph Public Subnet
@@ -30,8 +30,8 @@ flowchart TB
 
         subgraph Private Subnet
             subgraph Kubernetes Cluster
-                k8s[Pods/Services]
                 iam[IAM Policies/Roles]
+                k8s[Pods/Services]
 
                 lb --> k8s
             end
