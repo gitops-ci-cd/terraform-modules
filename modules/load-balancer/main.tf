@@ -1,5 +1,5 @@
 # Create an ALB or NLB based on the `type` variable
-resource "aws_lb" "load_balancer" {
+resource "aws_lb" "main" {
   name               = var.name
   internal           = var.internal
   load_balancer_type = var.type

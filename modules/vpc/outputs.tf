@@ -15,7 +15,7 @@ output "private_subnet_ids" {
 
 output "internet_gateway_ids" {
   description = "The ID of the Internet Gateway."
-  value       = aws_internet_gateway.igw.*.id
+  value       = aws_internet_gateway.public.*.id
 }
 
 output "nat_gateway_ids" {

@@ -45,7 +45,7 @@ resource "aws_subnet" "private" {
 }
 
 # Internet Gateway
-resource "aws_internet_gateway" "igw" {
+resource "aws_internet_gateway" "public" {
   count  = var.enable_internet_gateway ? 1 : 0
   vpc_id = aws_vpc.main.id
 
@@ -71,7 +71,7 @@ resource "aws_route" "public" {
 
   route_table_id         = aws_route_table.public[count.index].id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.igw[count.index].id
+  gateway_id             = aws_internet_gateway.public[count.index].id
 }
 
 resource "aws_route_table_association" "public" {

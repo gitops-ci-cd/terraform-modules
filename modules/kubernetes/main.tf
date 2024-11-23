@@ -58,7 +58,7 @@ resource "aws_eks_cluster" "main" {
 }
 
 # Create Node Groups
-resource "aws_eks_node_group" "default" {
+resource "aws_eks_node_group" "main" {
   for_each = { for ng in var.node_groups : ng.name => ng }
 
   cluster_name    = aws_eks_cluster.main.name
