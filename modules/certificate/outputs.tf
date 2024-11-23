@@ -12,9 +12,9 @@ output "dns_validation_records" {
   description = "DNS validation records (if applicable)."
   value = [
     for record in aws_route53_record.dns_validation : {
-      fqdn = record.fqdn
-      type = record.type
-      value = record.records[0]
+      fqdn  = record.name
+      type  = record.type
+      value = tolist(record.records)[0]
     }
   ]
 }

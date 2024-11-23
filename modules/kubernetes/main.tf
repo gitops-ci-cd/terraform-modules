@@ -1,5 +1,5 @@
 locals {
-  private_subnet_ids = [for s in data.aws_subnet.private : s.id]
+  private_subnet_ids = data.aws_subnets.private.ids
 }
 
 # Cluster IAM
@@ -8,14 +8,11 @@ module "cluster_role" {
 
   name = "${var.cluster_name}-k8s-cluster-role"
   assume_role_policy = {
-    Version = "2012-10-17"
     Statement = [
       {
         Effect    = "Allow"
-        Principal = {
-          Service = "eks.amazonaws.com"
-        }
-        Action    = "sts:AssumeRole"
+        Principal = { Service = "eks.amazonaws.com" }
+        Action    = [ "sts:AssumeRole" ]
       }
     ]
   }
@@ -28,12 +25,11 @@ module "cluster_policy" {
   name        = "${var.cluster_name}-k8s-cluster-policy"
   description = "Policy for EKS cluster to manage associated resources"
   policy = {
-    Version = "2012-10-17"
     Statement = [
       {
         Effect   = "Allow"
-        Action   = ["ec2:Describe*", "ecr:GetAuthorizationToken", "autoscaling:Describe*"]
-        Resource = "*"
+        Action   = [ "ec2:Describe*", "ecr:GetAuthorizationToken", "autoscaling:Describe*" ]
+        Resource = [ "*" ]
       }
     ]
   }
@@ -41,7 +37,7 @@ module "cluster_policy" {
   tags = var.tags
 }
 module "cluster_policy_attachment" {
-  source = "../../iam/attachment"
+  source = "../iam/attachment"
 
   role_arn  = module.cluster_role.role_arn
   policy_arn = module.cluster_policy.policy_arn

@@ -8,7 +8,7 @@ module "hosted_zone" {
 
   domain_name = var.domain_name
 
-  tags = locals.tags
+  tags = local.tags
 }
 
 # DNS Record
@@ -21,8 +21,8 @@ module "dns_record" {
       name                   = "www.${var.domain_name}"
       type                   = "A"
       ttl                    = 300
-      alias_name             = module.load_balancer.lb_dns_name
-      alias_zone_id          = module.load_balancer.lb_zone_id
+      alias_name             = module.load_balancer.load_balancer_dns_name
+      alias_zone_id          = module.load_balancer.load_balancer_zone_id
       evaluate_target_health = true
     }
   }
@@ -35,7 +35,7 @@ module "acm" {
   domain_name      = var.domain_name
   zone_id   = module.hosted_zone.zone_id
 
-  tags = locals.tags
+  tags = local.tags
 }
 
 # VPC
@@ -44,7 +44,7 @@ module "vpc" {
 
   vpc_name = "${var.name}-vpc"
 
-  tags = locals.tags
+  tags = local.tags
 }
 
 # Load Balancer
@@ -56,7 +56,7 @@ module "load_balancer" {
   type     = "application"
   internal = false
 
-  tags = locals.tags
+  tags = local.tags
 }
 
 # Node IAM
@@ -65,17 +65,16 @@ module "node_role" {
 
   name = "${var.name}-k8s-node-role"
   assume_role_policy = {
-    Version = "2012-10-17"
     Statement = [
       {
         Effect    = "Allow"
         Principal = { Service = "ec2.amazonaws.com" }
-        Action    = "sts:AssumeRole"
+        Action    = [ "sts:AssumeRole" ]
       }
     ]
   }
 
-  tags = locals.tags
+  tags = local.tags
 }
 module "node_policy" {
   source = "../../iam/policy"
@@ -83,17 +82,16 @@ module "node_policy" {
   name        = "${var.name}-k8s-node-policy"
   description = "Policy for EKS worker nodes to access S3 and CloudWatch"
   policy = {
-    Version = "2012-10-17"
     Statement = [
       {
         Effect   = "Allow"
-        Action   = ["s3:*", "ec2:Describe*", "logs:*", "cloudwatch:*"]
-        Resource = "*"
+        Resource = [ "*" ]
+        Action   = [ "s3:*", "ec2:Describe*", "logs:*", "cloudwatch:*" ]
       }
     ]
   }
 
-  tags = locals.tags
+  tags = local.tags
 }
 module "node_policy_attachment" {
   source = "../../iam/attachment"
@@ -123,5 +121,5 @@ module "kubernetes" {
     }
   ]
 
-  tags = locals.tags
+  tags = local.tags
 }

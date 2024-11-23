@@ -13,12 +13,12 @@ output "private_subnet_ids" {
   value       = aws_subnet.private.*.id
 }
 
-output "internet_gateway_id" {
+output "internet_gateway_ids" {
   description = "The ID of the Internet Gateway."
-  value       = aws_internet_gateway.igw.id
+  value       = aws_internet_gateway.igw.*.id
 }
 
-output "nat_gateway_id" {
+output "nat_gateway_ids" {
   description = "The ID of the NAT Gateway (if enabled)."
-  value       = length(aws_nat_gateway.nat) > 0 ? aws_nat_gateway.nat[0].id : null
+  value       = aws_nat_gateway.nat.*.id
 }

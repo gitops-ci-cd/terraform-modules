@@ -13,9 +13,7 @@ resource "aws_vpc" "main" {
   enable_dns_hostnames = true
 
   tags = merge(
-    {
-      Name = var.vpc_name
-    },
+    { Name = var.vpc_name },
     var.tags
   )
 }
@@ -29,9 +27,7 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = merge(
-    {
-      Name = "${var.vpc_name}-public-${count.index}"
-    },
+    { Name = "${var.vpc_name}-public-${count.index}" },
     var.tags
   )
 }
@@ -43,9 +39,7 @@ resource "aws_subnet" "private" {
   cidr_block = cidrsubnet(aws_vpc.main.cidr_block, 8, var.public_subnet_count + count.index)
 
   tags = merge(
-    {
-      Name = "${var.vpc_name}-private-${count.index}"
-    },
+    { Name = "${var.vpc_name}-private-${count.index}" },
     var.tags
   )
 }
@@ -56,9 +50,7 @@ resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main.id
 
   tags = merge(
-    {
-      Name = "${var.vpc_name}-igw"
-    },
+    { Name = "${var.vpc_name}-igw" },
     var.tags
   )
 }
@@ -69,24 +61,27 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
   tags = merge(
-    {
-      Name = "${var.vpc_name}-public-rt"
-    },
+    { Name = "${var.vpc_name}-public-rt" },
     var.tags
   )
 }
 
 resource "aws_route" "public" {
   count = var.enable_internet_gateway ? 1 : 0
-  route_table_id         = aws_route_table.public.id
+
+  route_table_id         = aws_route_table.public[count.index].id
   destination_cidr_block = "0.0.0.0/0"
-  gateway_id             = aws_internet_gateway.igw.id
+  gateway_id             = aws_internet_gateway.igw[count.index].id
 }
 
 resource "aws_route_table_association" "public" {
-  for_each       = aws_subnet.public
-  subnet_id      = each.value.id
-  route_table_id = aws_route_table.public.id
+  for_each = zipmap(
+    [for i in range(var.public_subnet_count) : i],
+    aws_subnet.public.*.id
+  )
+
+  subnet_id      = each.value
+  route_table_id = aws_route_table.public[0].id
 }
 
 # Optional NAT Gateway for Private Subnets
@@ -94,22 +89,18 @@ resource "aws_eip" "nat" {
   count = var.enable_nat_gateway ? 1 : 0
 
   tags = merge(
-    {
-      Name = "${var.vpc_name}-nat-eip"
-    },
+    { Name = "${var.vpc_name}-nat-eip" },
     var.tags
   )
 }
 
 resource "aws_nat_gateway" "nat" {
   count         = var.enable_nat_gateway ? 1 : 0
-  allocation_id = aws_eip.nat[0].id
-  subnet_id     = element(aws_subnet.public.*.id, 0)
+  allocation_id = aws_eip.nat[count.index].id
+  subnet_id     = aws_subnet.public[0].id
 
   tags = merge(
-    {
-      Name = "${var.vpc_name}-nat-gw"
-    },
+    { Name = "${var.vpc_name}-nat-gw" },
     var.tags
   )
 }
@@ -119,22 +110,25 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
   tags = merge(
-    {
-      Name = "${var.vpc_name}-private-rt"
-    },
+    { Name = "${var.vpc_name}-private-rt" },
     var.tags
   )
 }
 
 resource "aws_route" "private" {
-  count                 = var.enable_nat_gateway ? 1 : 0
-  route_table_id        = aws_route_table.private[0].id
+  count = var.enable_nat_gateway ? 1 : 0
+
+  route_table_id         = aws_route_table.private[count.index].id
   destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id        = aws_nat_gateway.nat[0].id
+  nat_gateway_id         = aws_nat_gateway.nat[count.index].id
 }
 
 resource "aws_route_table_association" "private" {
-  for_each       = aws_subnet.private
-  subnet_id      = each.value.id
+  for_each = zipmap(
+    [for i in range(var.private_subnet_count) : i],
+    aws_subnet.private.*.id
+  )
+
+  subnet_id      = each.value
   route_table_id = aws_route_table.private[0].id
 }

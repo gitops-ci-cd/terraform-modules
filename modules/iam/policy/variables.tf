@@ -10,7 +10,20 @@ variable "description" {
 
 variable "policy" {
   description = "Policy document."
-  type        = map(any)
+  type = object({
+    Version   = optional(string, "2012-10-17")
+    Statement = list(object({
+      Sid       = optional(string)
+      Effect    = string
+      Action    = list(string)
+      Resource  = optional(list(string))
+      Condition = optional(map(string))
+    }))
+  })
+  validation {
+    condition     = length(var.policy.Statement) > 0
+    error_message = "Policy must have at least one statement."
+  }
 }
 
 variable "tags" {
