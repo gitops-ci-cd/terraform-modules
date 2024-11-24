@@ -9,9 +9,15 @@ variable "name" {
   default     = "acme"
 }
 
+variable "subdomain" {
+  description = "The subdomain to use for the Load Balancer (e.g., www, api)"
+  type        = string
+  default     = "api"
+}
+
 variable "domain_name" {
   description = "The domain name that will ultimately route to these resources."
-  default     = "api.acme.com"
+  default     = "acme.com"
 }
 
 variable "environment" {

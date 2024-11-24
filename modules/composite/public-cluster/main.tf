@@ -8,42 +8,6 @@ locals {
   )
 }
 
-# Hosted Zone
-module "hosted_zone" {
-  source = "../../hosted-zone"
-
-  domain_name = var.domain_name
-
-  tags = local.tags
-}
-
-# DNS Record
-module "dns_record" {
-  source = "../../dns-record"
-
-  zone_id = module.hosted_zone.zone_id
-  records = {
-    www = {
-      name                   = "www.${var.domain_name}"
-      type                   = "A"
-      ttl                    = 300
-      alias_name             = module.load_balancer.load_balancer_dns_name
-      alias_zone_id          = module.load_balancer.load_balancer_zone_id
-      evaluate_target_health = true
-    }
-  }
-}
-
-# Certificate
-module "acm" {
-  source = "../../certificate"
-
-  domain_name = var.domain_name
-  zone_id     = module.hosted_zone.zone_id
-
-  tags = local.tags
-}
-
 # VPC
 module "vpc" {
   source = "../../vpc"
@@ -88,6 +52,9 @@ module "load_balancer_security_group" {
 module "load_balancer" {
   source = "../../load-balancer"
 
+  subdomain       = var.subdomain
+  domain_name     = var.domain_name
+  vpc_id          = module.vpc.vpc_id
   name            = "${var.name}-${var.environment}-lb"
   security_groups = [module.load_balancer_security_group.security_group_id]
   subnets         = module.vpc.public_subnets

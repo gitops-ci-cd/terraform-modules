@@ -7,13 +7,3 @@ output "cluster_id" {
   description = "The ID of the Kubernetes cluster."
   value       = module.kubernetes.cluster_id
 }
-
-output "load_balancer_dns_name" {
-  description = "The DNS name of the load balancer."
-  value       = module.load_balancer.load_balancer_dns_name
-}
-
-output "domain_name" {
-  description = "The domain name pointing to the cluster."
-  value       = var.domain_name
-}
