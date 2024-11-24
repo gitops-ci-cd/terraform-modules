@@ -21,7 +21,7 @@ resource "aws_route53_record" "dns_validation" {
 }
 
 module "dns_record" {
-  source  = "../dns-record"
+  source = "../dns-record"
 
   for_each = {
     for idx, option in tolist(aws_acm_certificate.main.domain_validation_options) : idx => option
@@ -30,11 +30,11 @@ module "dns_record" {
   zone_id = var.zone_id
   records = {
     dns_validation = {
-      name              = each.value.resource_record_name
-      type              = each.value.resource_record_type
-      ttl               = var.ttl
-      records           = [each.value.resource_record_value]
-      evaluate_health   = false
+      name            = each.value.resource_record_name
+      type            = each.value.resource_record_type
+      ttl             = var.ttl
+      records         = [each.value.resource_record_value]
+      evaluate_health = false
     }
   }
 }

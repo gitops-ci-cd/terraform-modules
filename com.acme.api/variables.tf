@@ -1,6 +1,7 @@
 variable "region" {
   description = "AWS region."
-  default     = "us-west-2"
+  type        = string
+  default     = null
 }
 
 variable "name" {
@@ -20,9 +21,9 @@ variable "environment" {
 
 variable "tags" {
   description = "Tags to apply to all resources."
-  default     = {
-    Project     = "gitops-ci-cd"
-    ManagedBy   = "Terraform"
-    Team        = "platform"
+  default = {
+    Project   = "gitops-ci-cd"
+    ManagedBy = "Terraform"
+    Team      = "platform"
   }
 }

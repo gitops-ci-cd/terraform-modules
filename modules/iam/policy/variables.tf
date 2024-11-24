@@ -11,7 +11,7 @@ variable "description" {
 variable "policy" {
   description = "Policy document."
   type = object({
-    Version   = optional(string, "2012-10-17")
+    Version = optional(string, "2012-10-17")
     Statement = list(object({
       Sid       = optional(string)
       Effect    = string

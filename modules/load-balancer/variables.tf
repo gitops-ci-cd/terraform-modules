@@ -19,9 +19,8 @@ variable "subnets" {
 }
 
 variable "security_groups" {
-  description = "List of security group IDs to associate with the load balancer. Required for ALBs."
+  description = "List of security group IDs to associate with the load balancer."
   type        = list(string)
-  default     = []
 }
 
 variable "internal" {

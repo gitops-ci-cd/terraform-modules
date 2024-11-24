@@ -6,7 +6,7 @@ variable "name" {
 variable "assume_role_policy" {
   description = "Assume role policy document."
   type = object({
-    Version   = optional(string, "2012-10-17")
+    Version = optional(string, "2012-10-17")
     Statement = list(object({
       Sid       = optional(string)
       Effect    = string

@@ -1,10 +1,16 @@
 locals {
-  tags = merge(var.tags, { Environment = var.environment })
+  tags = merge(
+    {
+      Name        = var.name
+      Environment = var.environment
+    },
+    var.tags
+  )
 }
 
 # Hosted Zone
 module "hosted_zone" {
-  source      = "../../hosted-zone"
+  source = "../../hosted-zone"
 
   domain_name = var.domain_name
 
@@ -30,10 +36,10 @@ module "dns_record" {
 
 # Certificate
 module "acm" {
-  source           = "../../certificate"
+  source = "../../certificate"
 
-  domain_name      = var.domain_name
-  zone_id   = module.hosted_zone.zone_id
+  domain_name = var.domain_name
+  zone_id     = module.hosted_zone.zone_id
 
   tags = local.tags
 }
@@ -47,14 +53,44 @@ module "vpc" {
   tags = local.tags
 }
 
-# Load Balancer
-module "load_balancer" {
-  source  = "../../load-balancer"
+# Application Load Balancer
+module "load_balancer_security_group" {
+  source = "../../security-group"
 
-  name     = "${var.name}-${var.environment}-lb"
-  subnets  = module.vpc.public_subnet_ids
-  type     = "application"
-  internal = false
+  name        = "${var.name}-lb-sg"
+  description = "Default security group for the load balancer"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress_rules = [{
+    description = "Allow HTTP traffic"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    }, {
+    description = "Allow HTTPS traffic"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }]
+
+  egress_rules = [{
+    description = "Allow all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }]
+
+  tags = local.tags
+}
+module "load_balancer" {
+  source = "../../load-balancer"
+
+  name            = "${var.name}-${var.environment}-lb"
+  security_groups = [module.load_balancer_security_group.security_group_id]
+  subnets         = module.vpc.public_subnets
 
   tags = local.tags
 }
@@ -69,7 +105,7 @@ module "node_role" {
       {
         Effect    = "Allow"
         Principal = { Service = "ec2.amazonaws.com" }
-        Action    = [ "sts:AssumeRole" ]
+        Action    = ["sts:AssumeRole"]
       }
     ]
   }
@@ -85,8 +121,8 @@ module "node_policy" {
     Statement = [
       {
         Effect   = "Allow"
-        Resource = [ "*" ]
-        Action   = [ "s3:*", "ec2:Describe*", "logs:*", "cloudwatch:*" ]
+        Resource = ["*"]
+        Action   = ["s3:*", "ec2:Describe*", "logs:*", "cloudwatch:*"]
       }
     ]
   }
@@ -96,18 +132,53 @@ module "node_policy" {
 module "node_policy_attachment" {
   source = "../../iam/attachment"
 
-  role_arn  = module.node_role.role_arn
+  role_arn   = module.node_role.role_arn
   policy_arn = module.node_policy.policy_arn
 }
 
-# K8s Cluster
+# Kubernetes Cluster
+module "cluster_security_group" {
+  source = "../../security-group"
+
+  name        = "${var.name}-eks-sg"
+  description = "EKS security group for worker nodes"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress_rules = [{
+    description     = "Allow traffic from the load balancer"
+    from_port       = 0
+    to_port         = 65535
+    protocol        = "tcp"
+    security_groups = [module.load_balancer_security_group.security_group_id]
+  }]
+
+  egress_rules = [{
+    description = "Allow all outbound traffic"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }]
+
+  tags = local.tags
+}
+resource "aws_security_group_rule" "node_to_node" {
+  description              = "Allow Kubernetes nodes to communicate with each other"
+  type                     = "ingress"
+  from_port                = 0
+  to_port                  = 65535
+  protocol                 = "tcp"
+  security_group_id        = module.cluster_security_group.security_group_id
+  source_security_group_id = module.cluster_security_group.security_group_id
+}
 module "kubernetes" {
   source = "../../kubernetes"
 
-  cluster_name       = "${var.name}-${var.environment}-cluster"
-  region             = var.region
-  vpc_id             = module.vpc.vpc_id
-  subnet_ids         = module.vpc.private_subnet_ids
+  cluster_name    = "${var.name}-${var.environment}-cluster"
+  region          = var.region
+  vpc_id          = module.vpc.vpc_id
+  subnet_ids      = module.vpc.private_subnets
+  security_groups = [module.cluster_security_group.security_group_id]
 
   # Node group details
   node_groups = [

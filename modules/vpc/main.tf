@@ -12,10 +12,7 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
   enable_dns_hostnames = true
 
-  tags = merge(
-    { Name = var.vpc_name },
-    var.tags
-  )
+  tags = var.tags
 }
 
 # Automatically create public and private subnets
@@ -26,10 +23,7 @@ resource "aws_subnet" "public" {
   cidr_block              = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index)
   map_public_ip_on_launch = true
 
-  tags = merge(
-    { Name = "${var.vpc_name}-public-${count.index}" },
-    var.tags
-  )
+  tags = var.tags
 }
 
 resource "aws_subnet" "private" {
@@ -38,10 +32,7 @@ resource "aws_subnet" "private" {
   vpc_id     = aws_vpc.main.id
   cidr_block = cidrsubnet(aws_vpc.main.cidr_block, 8, var.public_subnet_count + count.index)
 
-  tags = merge(
-    { Name = "${var.vpc_name}-private-${count.index}" },
-    var.tags
-  )
+  tags = var.tags
 }
 
 # Internet Gateway
@@ -49,10 +40,7 @@ resource "aws_internet_gateway" "public" {
   count  = var.enable_internet_gateway ? 1 : 0
   vpc_id = aws_vpc.main.id
 
-  tags = merge(
-    { Name = "${var.vpc_name}-igw" },
-    var.tags
-  )
+  tags = var.tags
 }
 
 # Route Table for Public Subnets
@@ -60,10 +48,7 @@ resource "aws_route_table" "public" {
   count  = var.enable_internet_gateway ? 1 : 0
   vpc_id = aws_vpc.main.id
 
-  tags = merge(
-    { Name = "${var.vpc_name}-public-rt" },
-    var.tags
-  )
+  tags = var.tags
 }
 
 resource "aws_route" "public" {
@@ -88,10 +73,7 @@ resource "aws_route_table_association" "public" {
 resource "aws_eip" "nat" {
   count = var.enable_nat_gateway ? 1 : 0
 
-  tags = merge(
-    { Name = "${var.vpc_name}-nat-eip" },
-    var.tags
-  )
+  tags = var.tags
 }
 
 resource "aws_nat_gateway" "nat" {
@@ -99,20 +81,14 @@ resource "aws_nat_gateway" "nat" {
   allocation_id = aws_eip.nat[count.index].id
   subnet_id     = aws_subnet.public[0].id
 
-  tags = merge(
-    { Name = "${var.vpc_name}-nat-gw" },
-    var.tags
-  )
+  tags = var.tags
 }
 
 resource "aws_route_table" "private" {
   count  = var.enable_nat_gateway ? 1 : 0
   vpc_id = aws_vpc.main.id
 
-  tags = merge(
-    { Name = "${var.vpc_name}-private-rt" },
-    var.tags
-  )
+  tags = var.tags
 }
 
 resource "aws_route" "private" {

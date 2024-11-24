@@ -1,5 +1,5 @@
 locals {
-  private_subnet_ids = data.aws_subnets.private.ids
+  private_subnets = data.aws_subnets.private.ids
 }
 
 # Cluster IAM
@@ -12,7 +12,7 @@ module "cluster_role" {
       {
         Effect    = "Allow"
         Principal = { Service = "eks.amazonaws.com" }
-        Action    = [ "sts:AssumeRole" ]
+        Action    = ["sts:AssumeRole"]
       }
     ]
   }
@@ -28,8 +28,8 @@ module "cluster_policy" {
     Statement = [
       {
         Effect   = "Allow"
-        Action   = [ "ec2:Describe*", "ecr:GetAuthorizationToken", "autoscaling:Describe*" ]
-        Resource = [ "*" ]
+        Action   = ["ec2:Describe*", "ecr:GetAuthorizationToken", "autoscaling:Describe*"]
+        Resource = ["*"]
       }
     ]
   }
@@ -39,7 +39,7 @@ module "cluster_policy" {
 module "cluster_policy_attachment" {
   source = "../iam/attachment"
 
-  role_arn  = module.cluster_role.role_arn
+  role_arn   = module.cluster_role.role_arn
   policy_arn = module.cluster_policy.policy_arn
 }
 
@@ -49,7 +49,8 @@ resource "aws_eks_cluster" "main" {
   role_arn = module.cluster_role.role_arn
 
   vpc_config {
-    subnet_ids = local.private_subnet_ids
+    subnet_ids         = local.private_subnets
+    security_group_ids = var.security_groups
   }
 
   version = var.kubernetes_version
