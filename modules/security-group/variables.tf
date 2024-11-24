@@ -24,6 +24,7 @@ variable "ingress_rules" {
     cidr_blocks      = optional(list(string), [])
     ipv6_cidr_blocks = optional(list(string), [])
     security_groups  = optional(list(string), [])
+    self             = optional(bool, false)
   }))
   default = []
 }

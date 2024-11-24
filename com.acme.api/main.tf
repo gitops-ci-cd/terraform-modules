@@ -8,8 +8,6 @@ module "public_cluster" {
   source = "../modules/composite/public-cluster"
 
   region      = local.region
-  subdomain   = var.subdomain
-  domain_name = var.domain_name
   name        = var.name
   environment = var.environment
 

@@ -11,34 +11,55 @@ flowchart TB
     internet[Internet]
 
     subgraph Hosted Zone
-       dns
+       dns:::managed
     end
 
-    user <--> dns
-    dns <--> igw
+    user <==> dns <==> igw
 
     subgraph VPC
         subgraph Public Subnet
+            tg[Target Group]:::managed
+            cert[Certificate]:::managed
             igw[Internet Gateway]
-            lb[Load Balancer]
-            cert[Certificate]
+            lb[Load Balancer]:::managed
             nat[NAT Gateway]
-            
-            igw --> lb
-            lb <--> cert
+
+            igw ==> lb --o cert
         end
 
         subgraph Private Subnet
-            subgraph Kubernetes Cluster
-                iam[IAM Policies/Roles]
-                k8s[Pods/Services]
+            cluster:::security-group
 
-                lb --> k8s
+            subgraph cluster[Kubernetes Cluster]
+                ext-dns[ExternalDNS]:::addon
+                cm[Cert Manager]:::addon
+                lbc[AWS Load Balancer Controller]:::addon
+
+                iam[IAM Policies/Roles]
+                gateway[Gateway]
+                route[HTTPRoute]
+                service[Service]
+                node:::security-group
+
+                subgraph node[Node]
+                    pod[Pod]
+                end
+                ext-dns -.-> dns
+                cm -.-> cert
+                lbc -.-> lb
+                lbc -.-> tg
+
+                lb ==> tg ==> gateway ==> route ==> service ==> pod
+
             end
+
         end
-        k8s --> nat
+        pod -.-> nat
     end
 
-    nat --> igw
-    igw --> internet
+    nat -.-> igw -.-> internet
+
+    classDef security-group stroke:green;
+    classDef addon stroke:blue;
+    classDef managed stroke:blue,stroke-dasharray:10
 ```

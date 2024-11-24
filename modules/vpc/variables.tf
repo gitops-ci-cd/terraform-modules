@@ -1,8 +1,3 @@
-variable "vpc_name" {
-  description = "Name of the VPC."
-  type        = string
-}
-
 variable "cidr_block" {
   description = "Optional CIDR block for the VPC. If not provided, one will be inferred."
   type        = string

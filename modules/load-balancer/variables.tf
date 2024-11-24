@@ -18,22 +18,6 @@ variable "subnets" {
   type        = list(string)
 }
 
-variable "vpc_id" {
-  description = "ID of the VPC to indirectly associate the load balancer with."
-  type        = string
-}
-
-variable "subdomain" {
-  description = "The subdomain to use for the Load Balancer (e.g., www, api)"
-  type        = string
-  default     = "www"
-}
-
-variable "domain_name" {
-  description = "Domain name to associate with the load balancer."
-  type        = string
-}
-
 variable "security_groups" {
   description = "List of security group IDs to associate with the load balancer."
   type        = list(string)

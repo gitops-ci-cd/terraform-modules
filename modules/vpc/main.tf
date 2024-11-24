@@ -23,7 +23,13 @@ resource "aws_subnet" "public" {
   cidr_block              = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index)
   map_public_ip_on_launch = true
 
-  tags = var.tags
+  tags = merge(
+    {
+      "kubernetes.io/role/elb"                                                 = "1"     # Required for public ALBs
+      "kubernetes.io/cluster/${var.tags.Name}-${var.tags.Environment}-cluster" = "owned" # Associates with a K8s cluster
+    },
+    var.tags
+  )
 }
 
 resource "aws_subnet" "private" {
@@ -32,7 +38,13 @@ resource "aws_subnet" "private" {
   vpc_id     = aws_vpc.main.id
   cidr_block = cidrsubnet(aws_vpc.main.cidr_block, 8, var.public_subnet_count + count.index)
 
-  tags = var.tags
+  tags = merge(
+    {
+      "kubernetes.io/role/internal-elb"                                        = "1"     # Required for internal ALBs
+      "kubernetes.io/cluster/${var.tags.Name}-${var.tags.Environment}-cluster" = "owned" # Associates with a K8s cluster
+    },
+    var.tags
+  )
 }
 
 # Internet Gateway

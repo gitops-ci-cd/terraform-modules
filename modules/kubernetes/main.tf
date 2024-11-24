@@ -6,7 +6,7 @@ locals {
 module "cluster_role" {
   source = "../iam/role"
 
-  name = "${var.cluster_name}-k8s-cluster-role"
+  name = "${var.cluster_name}-k8s-cluster"
   assume_role_policy = {
     Statement = [
       {
@@ -22,7 +22,7 @@ module "cluster_role" {
 module "cluster_policy" {
   source = "../iam/policy"
 
-  name        = "${var.cluster_name}-k8s-cluster-policy"
+  name        = "${var.cluster_name}-k8s-cluster"
   description = "Policy for EKS cluster to manage associated resources"
   policy = {
     Statement = [
