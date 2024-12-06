@@ -2,11 +2,10 @@ terraform {
   required_version = ">= 1.0.0"
 
   backend "s3" {
-    bucket     = "my-terraform-state"
-    key        = "state/terraform.tfstate"
-    region     = "us-east-1"
-    access_key = "mock_access_key"
-    secret_key = "mock_secret_key"
+    bucket  = "my-terraform-state"
+    key     = "state/terraform.tfstate"
+    region  = "us-east-1"
+    profile = "default"
     endpoints = {
       s3 = "http://localhost:4566"
     }

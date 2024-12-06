@@ -65,10 +65,10 @@ module "cluster_security_group" {
   vpc_id      = module.vpc.vpc_id
 
   ingress_rules = [{
-    description     = "Allow traffic from the load balancer"
-    from_port       = 0
-    to_port         = 65535
-    protocol        = "tcp"
+    description = "Allow traffic from the load balancer"
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
   }]
 
   egress_rules = [{
@@ -95,7 +95,6 @@ module "kubernetes" {
   source = "../../kubernetes"
 
   cluster_name    = "${var.name}-${var.environment}-cluster"
-  region          = var.region
   vpc_id          = module.vpc.vpc_id
   subnet_ids      = module.vpc.private_subnets
   security_groups = [module.cluster_security_group.security_group_id]

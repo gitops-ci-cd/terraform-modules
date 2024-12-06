@@ -21,19 +21,7 @@ Each [module](./modules) has its own README with specific usage instructions. Th
 docker compose up -d
 ```
 
-To use our local version of AWS ([localstack](https://github.com/localstack/localstack)), we'll need to set some env
-
-```sh
-export AWS_ACCESS_KEY_ID=mock_access_key
-export AWS_SECRET_ACCESS_KEY=mock_secret_key
-```
-
-If we want to use Vault, we'll need to set some env
-
-```sh
-export VAULT_ADDR='http://localhost:8200'
-export VAULT_TOKEN="root"
-```
+To use our local version of AWS ([localstack](https://github.com/localstack/localstack)), we'll need to source the AWS_ACCESS_KEY_ID environment variable, AWS shared credentials file (e.g. `~/.aws/credentials`), or AWS shared configuration file (e.g. `~/.aws/config`).
 
 Then we can run our Terraform commands, after creating a bucket for our state
 
